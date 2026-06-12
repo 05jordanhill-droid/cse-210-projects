@@ -19,9 +19,10 @@ class functions			Display(string s): void													Activity(string name, stri
 																								GetGenericStart(): string			
 																								GetGenericEnd(): string			
 
-
-Source:
-	ChatGPT >>> https://chatgpt.com/share/6a2adf07-1f70-83e8-bd51-b2caf74e89ca
+Name: Jordan Hill
+Class: CSE-210
+Sources:
+	ChatGPT >>> https://chatgpt.com/share/6a2b7088-f2d0-83e8-90d9-2b030d370844
 */
 
 using System;
@@ -30,9 +31,33 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello Develop04 World!");
-
 		Breathing jahBreathing = new Breathing("Breathing", "Breathing Description");
-		jahBreathing.Run();
+		Reflection jahReflection = new Reflection("Reflecting", "Reflecting Description");
+		Enumerate jahEnumerate = new Enumerate("Listing", "Listing Description");
+
+		string jahChoice = "";
+
+		while (jahChoice != "4")
+		{
+			Support.Display("Menu Options:");
+			Support.Display("  1. Start breathing activity");
+			Support.Display("  2. Start reflection activity");
+			Support.Display("  3. Start listing activity");
+			Support.Display("  4. Quit");
+			jahChoice = Support.GetUserInputString("Select a choice from the menu: ", true);
+
+			if (jahChoice == "1")
+			{
+				jahBreathing.Run();
+			}
+			else if (jahChoice == "2")
+			{
+				jahReflection.Run();
+			}
+			else if (jahChoice == "3")
+			{
+				jahEnumerate.Run();
+			}
+		}
     }
 }
