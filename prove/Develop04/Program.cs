@@ -23,6 +23,9 @@ Name: Jordan Hill
 Class: CSE-210
 Sources:
 	ChatGPT >>> https://chatgpt.com/share/6a2b7088-f2d0-83e8-90d9-2b030d370844
+
+Stretch:
+	Make sure no random prompts/questions are selected until they have all been used at least once in that session.
 */
 
 using System;
