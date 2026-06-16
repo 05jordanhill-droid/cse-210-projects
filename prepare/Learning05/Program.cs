@@ -6,20 +6,10 @@ class Program
     {
         Console.WriteLine("Hello Learning05 World!");
 
-        Square jahShapeOne = new Square();
-        jahShapeOne.SetColor("red");
-        jahShapeOne.SetSide(2);
-
-        Rectangle jahShapeTwo = new Rectangle();
-        jahShapeTwo.SetColor("blue");
-        jahShapeTwo.SetLength(3);
-        jahShapeTwo.SetWidth(4);
-
-        Circle jahShapeThree = new Circle();
-        jahShapeThree.SetColor("red");
-        jahShapeThree.SetRadius(2);
+        Square jahShapeOne = new Square("red", 2);
+        Rectangle jahShapeTwo = new Rectangle("blue", 3, 4);
+        Circle jahShapeThree = new Circle("purple", 5);
         
-
         List<Shape> jahShapes = new List<Shape>();
         jahShapes.Add(jahShapeOne);
         jahShapes.Add(jahShapeTwo);

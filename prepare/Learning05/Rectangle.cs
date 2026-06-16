@@ -4,6 +4,11 @@ public class Rectangle : Shape
 {
     private double _jahLength;
     private double _jahWidth;
+    public Rectangle(string jahColor, double jahLength, double jahWidth) : base(jahColor)
+    {
+        _jahLength = jahLength;
+        _jahWidth = jahWidth;
+    }
 
     public override double GetArea()
     {
