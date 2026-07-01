@@ -87,7 +87,7 @@ public abstract class Goal
 
     public abstract string GetTypeName();
 
-    public virtual void SetBundledInfo(List<Object> jahBundledInfo)
+    protected virtual void SetBundledInfo(List<Object> jahBundledInfo)
     {
         SetName((string)jahBundledInfo[0]);
         SetDescription((string)jahBundledInfo[1]);

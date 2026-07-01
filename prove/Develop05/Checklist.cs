@@ -78,7 +78,7 @@ class Checklist : Goal
     // override GetInfo(): string
     // override Check(score): Abstract int
 
-    public override void SetBundledInfo(List<Object> jahBundledInfo)
+    protected override void SetBundledInfo(List<Object> jahBundledInfo)
     {
         SetName((string)jahBundledInfo[0]);
         SetDescription((string)jahBundledInfo[1]);
