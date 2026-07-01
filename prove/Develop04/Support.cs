@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.IO;
 
 class Support{
     public static int GetUserInputInteger(string Prompt, Boolean noNewLine=false)
@@ -133,5 +134,75 @@ class Support{
         int index = random.Next(length);
 
         return index;
+    }
+    
+    public static void SaveAsFile(string content, string fileName, string fileType="txt")
+    {
+        File.WriteAllText($"{fileName}.{fileType}", content);
+    }
+    public static void SaveFile(string content, string fileName, string fileType="txt")
+    {
+        File.AppendAllText($"{fileName}.{fileType}", $"\n{content}");
+    }
+    public static string LoadFile(string fileName, string fileType="txt")
+    {
+        return File.ReadAllText($"{fileName}.{fileType}");
+    }
+
+    public static Boolean StringIsIn(string target, List<string> recipient)
+    {
+        foreach(string suspect in recipient)
+        {
+            if(suspect == target)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    public static Boolean StringIsIn(string target, Dictionary<string, string> recipient)
+    {
+        foreach(string suspect in recipient.Keys)
+        {
+            if(suspect == target)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    public static Boolean StringIsIn(string target, Dictionary<string, List<string>> recipient)
+    {
+        foreach(string suspect in recipient.Keys)
+        {
+            if(suspect == target)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    public static Dictionary<string, List<string>> StoreData(string data, string storageKey, Dictionary<string, List<string>> storage)
+    {
+        if(StringIsIn(storageKey, storage))
+        {
+            storage[storageKey].Add(data);
+        }
+        else
+        {
+            List<string> dataList = new List<string>();
+            dataList.Add(data);
+            storage[storageKey] = dataList;
+        }
+
+        return storage;
+    }
+    public static List<string> LoadData(string storageKey, Dictionary<string, List<string>> storage)
+    {
+        return storage[storageKey];
     }
 }

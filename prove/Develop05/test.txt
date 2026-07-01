@@ -1,0 +1,1 @@
+{"score":160,"simple":[["Do the dishes","Go do the dishes",20,"X"]],"eternal":[["Temple Work","Go to the Temple~~||~~ and do an ordinance",30," "],["goatcheese","go to~~||~~ hitherthereto",30," "]],"checklist":[["Read","Read a book",10,50,3,"X",3]]}
