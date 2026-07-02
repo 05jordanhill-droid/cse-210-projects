@@ -24,7 +24,6 @@ class Support{
 
         return rvalue;
     }
-
     public static float GetUserInputFloat(string Prompt, Boolean noNewLine=false)
     {
         float rvalue = 0;
@@ -45,7 +44,6 @@ class Support{
 
         return rvalue;
     }
-
     public static string GetUserInputString(string Prompt, Boolean noNewLine=false)
     {
         string jahUserInputStr = "";
@@ -69,7 +67,6 @@ class Support{
 
         return jahUserInputStr;
     }
-
     public static float GetUserInputRealNumber(string Prompt, Boolean noNewLine=false)
     {
         float rvalue = 0;
@@ -98,6 +95,8 @@ class Support{
     {
         Console.ReadLine();
     }
+
+
     public static void Display(string s)
     {
         Console.WriteLine(s);
@@ -113,10 +112,12 @@ class Support{
         }
     }
 
+
     public static void Clear()
     {
         Console.Clear();
     }
+
 
     public static string GetRandomString(List<string> stringList)
     {
@@ -136,11 +137,15 @@ class Support{
 
         return index;
     }
-    public static string FormatStringToFile(string target, string issue=",", string replace="~~||~~")
+
+
+
+    // Saving / Loading Files
+    private static string FormatStringToFile(string target, string issue=",", string replace="~~||~~")
     {
         return target.Replace(issue, replace);
     }
-    public static Dictionary<string, Object> FormatDictToFile(Dictionary<string, Object> dict)
+    private static Dictionary<string, Object> FormatDictToFile(Dictionary<string, Object> dict)
     {
         foreach (string key in dict.Keys)
         {
@@ -148,7 +153,7 @@ class Support{
         }
         return dict;
     }
-    public static List<Object> FormatListToFile(List<Object> target)
+    private static List<Object> FormatListToFile(List<Object> target)
     {
         List<Object> newList = new();
         foreach(Object piece in target)
@@ -158,7 +163,7 @@ class Support{
 
         return newList;
     }
-    public static Object FormatToFile(Object target)
+    private static Object FormatToFile(Object target)
     {
         if (target is string)
         {
@@ -173,18 +178,16 @@ class Support{
 
         return target;
     }
-    public static string JsonToString(Object dict)
+    private static string JsonToString(Object dict)
     {
         dict = FormatToFile(dict);
         return JsonSerializer.Serialize(dict);
     }
-
-
-    public static string FormatFileToString(string target, string replace=",", string issue="~~||~~")
+    private static string FormatFileToString(string target, string replace=",", string issue="~~||~~")
     {
         return target.Replace(issue, replace);
     }
-    public static Dictionary<string, Object> FormatFileToDict(Dictionary<string, Object> dict)
+    private static Dictionary<string, Object> FormatFileToDict(Dictionary<string, Object> dict)
     {
         foreach (string key in dict.Keys)
         {
@@ -192,7 +195,7 @@ class Support{
         }
         return dict;
     }
-    public static List<Object> FormatFileToList(List<Object> target)
+    private static List<Object> FormatFileToList(List<Object> target)
     {
         List<Object> newList = new();
         foreach(Object piece in target)
@@ -202,7 +205,7 @@ class Support{
 
         return newList;
     }
-    public static Object FormatFromFile(Object target)
+    private static Object FormatFromFile(Object target)
     {
         if (target is string)
         {
@@ -217,7 +220,7 @@ class Support{
 
         return target;
     }
-    public static Dictionary<string, Object> StringToJson(string content)
+    private static Dictionary<string, Object> StringToJson(string content)
     {
         Dictionary<string, JsonElement> dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content);
         Dictionary<string, Object> result = new();
@@ -231,7 +234,7 @@ class Support{
 
         return result;
     }
-    public static Object JsonLoadNum(Object target)
+    private static Object JsonLoadNum(Object target)
     {
         try
         {
@@ -241,11 +244,11 @@ class Support{
             return ((JsonElement)target).GetDouble();
         }
     }
-    public static string JsonLoadString(Object target)
+    private static string JsonLoadString(Object target)
     {
         return ((JsonElement)target).GetString();
     }
-    public static Object JsonLoad(Object target)
+    private static Object JsonLoad(Object target)
     {
         JsonElement element = (JsonElement)target;
 
@@ -266,7 +269,7 @@ class Support{
 
         return null;
     }
-    public static List<Object> JsonLoadList(Object target)
+    private static List<Object> JsonLoadList(Object target)
     {
         JsonElement array = (JsonElement)target;
 
@@ -279,7 +282,7 @@ class Support{
 
         return newList;
     }
-    public static Dictionary<string, Object> JsonLoadDict(Object target)
+    private static Dictionary<string, Object> JsonLoadDict(Object target)
     {
         JsonElement dict = (JsonElement)target;
         Dictionary<string, Object> newDict = new();
@@ -315,7 +318,8 @@ class Support{
         string file = File.ReadAllText($"{fileName}.{fileType}");
         return StringToJson(file);
     }
-
+// 
+// String is in
     public static Boolean StringIsIn(string target, List<string> recipient)
     {
         foreach(string suspect in recipient)
@@ -352,7 +356,8 @@ class Support{
         
         return false;
     }
-
+// 
+// Data Storage
     public static Dictionary<string, List<T>> StoreData<T>(T data, string storageKey, Dictionary<string, List<T>> storage)
     {
         if(StringIsIn(storageKey, storage))
@@ -371,5 +376,105 @@ class Support{
     public static List<T> LoadData<T>(string storageKey, Dictionary<string, List<T>> storage)
     {
         return storage[storageKey];
+    }
+// 
+// Menu Interface
+    public static void RunMenu(List<string> keyList, List<Func<Object>> valueList, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
+    {
+        if(quit == "Quit" && !endless && !valueList.Contains(EndMenuRun))
+        {
+            keyList.Add($"{valueList.Count + 1}. {quit}");
+            valueList.Add(EndMenuRun);
+        }
+
+        Dictionary<string, Func<Object>> menuDict = IndexizeDict(keyList, valueList);
+        Boolean run = true;
+
+        while(run)
+        {
+            DisplayMenu(menuDict);
+            
+            string choice = GetUserInputString(choicePrompt, true);
+            try
+            {
+                Object outcome = GetChoice(menuDict, choice);
+                run = CheckChoiceEnd(outcome, run);
+            }
+            catch
+            {
+                Display(errorMessage);
+            }
+        }
+    }
+    public static Boolean CheckChoiceEnd(Object outcome, Boolean run)
+    {
+        if(outcome is string)
+        {
+            if((string)outcome == "~~||~~ END MENU RUN ~~||~~")
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public static Object GetChoice(Dictionary<string, Func<Object>> menuDict, string choice)
+    {
+        Object outcome = menuDict[choice]();
+        return outcome;
+    }
+    public static void DisplayMenu(Dictionary<string, Func<Object>> menuDict)
+    {
+        int index = 1;
+        foreach(string option in menuDict.Keys)
+        {
+            try
+            {
+                string displayKey = FindValueEquivalent($"{index}", menuDict);
+                Display($"{index}. {displayKey}");
+            }catch{}
+            
+            index += 1;
+        }
+    }
+    public static string EndMenuRun()
+    {
+        return "~~||~~ END MENU RUN ~~||~~";
+    }
+    public static string FindValueEquivalent(string starter, Dictionary<string, Func<Object>> dict)
+    {
+        foreach(string key in dict.Keys)
+        {
+            if(dict[key] == dict[starter] && key != starter)
+            {
+                return key;
+            }
+        }
+        return null;
+    }
+    public static Dictionary<string, Func<Object>> IndexizeDict(List<string> keyList, List<Func<Object>> valueList)
+    {
+        int index = 1;
+        Dictionary<string, Func<Object>> menuDict = new();
+
+        foreach(string option in keyList)
+        {
+            menuDict[$"{index}"] = valueList[index-1];
+            menuDict[keyList[index-1]] = valueList[index-1];
+
+            index += 1;
+        }
+        return menuDict;
+    }
+    public static Dictionary<string, Func<Object>> IndexizeDict(Dictionary<string, Func<Object>> menuDict)
+    {
+        int index = 1;
+
+        foreach(string option in menuDict.Keys)
+        {
+            menuDict[$"{index}"] = menuDict[option];
+
+            index += 1;
+        }
+        return menuDict;
     }
 }
