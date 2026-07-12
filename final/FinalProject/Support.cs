@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.IO;
 using System.Text.Json;
+using System.ComponentModel;
 
 class Support{
     public static int GetUserInputInteger(string Prompt, Boolean noNewLine=false)
@@ -136,6 +137,13 @@ class Support{
         int index = random.Next(length);
 
         return index;
+    }
+    public static T GetRandom<T>(List<T> list)
+    {
+        Random random = new Random();
+        T rvalue = list[GetRandomInt(list.Count)];
+
+        return rvalue;
     }
 
 
@@ -395,19 +403,6 @@ class Support{
         return Bundled;
     }
 */
-    static List<Object> DictFunction(List<Object> jahBundled)
-    {
-        List<Goal> jahGoalList = (List<Goal>)jahBundled[0];
-        int jahScore = (int)jahBundled[1];
-
-        //Code to Execute
-
-        jahBundled = new(){
-            jahGoalList,
-            jahScore
-        };
-        return jahBundled;
-    }
     public static void RunMenu(List<string> keyList, List<Func<Object>> valueList, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
     {
         if(quit == "Quit" && !endless && !valueList.Contains(EndMenuRun))
@@ -593,4 +588,251 @@ class Support{
         }
         return menuDict;
     }
+//
+//List Helps
+    public static double FindMinimalValue(List<double> sortList)
+    {
+        double jahMinSpeed = 999999999999999999;
+        
+        foreach(double jahCompare in sortList)
+        {
+            if(jahCompare < jahMinSpeed)
+            {
+                jahMinSpeed = jahCompare;
+            }
+        }
+        return jahMinSpeed;
+    }
+    public static int FindMinimalValue(List<int> sortList)
+    {
+        int jahMinSpeed = 999999999;
+        
+        foreach(int jahCompare in sortList)
+        {
+            if(jahCompare < jahMinSpeed)
+            {
+                jahMinSpeed = jahCompare;
+            }
+        }
+        return jahMinSpeed;
+    }
+    public static double FindMaximumValue(List<double> sortList)
+    {
+        double jahMaxSpeed = -999999999999999999;
+        
+        foreach(double jahCompare in sortList)
+        {
+            if(jahCompare > jahMaxSpeed)
+            {
+                jahMaxSpeed = jahCompare;
+            }
+        }
+        return jahMaxSpeed;
+    }
+    public static int FindMaximumValue(List<int> sortList)
+    {
+        int jahMaxSpeed = -999999999;
+        
+        foreach(int jahCompare in sortList)
+        {
+            if(jahCompare > jahMaxSpeed)
+            {
+                jahMaxSpeed = jahCompare;
+            }
+        }
+        return jahMaxSpeed;
+    }
+    public static double FindMinimalValue<T>(List<T> sortList, Func<T, double> method)
+    {
+        double jahMinSpeed = 999999999999999999;
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) < jahMinSpeed)
+            {
+                jahMinSpeed = method(jahCompare);
+            }
+        }
+        return jahMinSpeed;
+    }
+    public static int FindMinimalValue<T>(List<T> sortList, Func<T, int> method)
+    {
+        int jahMinSpeed = 999999999;
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) < jahMinSpeed)
+            {
+                jahMinSpeed = method(jahCompare);
+            }
+        }
+        return jahMinSpeed;
+    }
+    public static double FindMaximumValue<T>(List<T> sortList, Func<T, double> method)
+    {
+        double jahMaxSpeed = -999999999999999999;
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) > jahMaxSpeed)
+            {
+                jahMaxSpeed = method(jahCompare);
+            }
+        }
+        return jahMaxSpeed;
+    }
+    public static int FindMaximumValue<T>(List<T> sortList, Func<T, int> method)
+    {
+        int jahMaxSpeed = -999999999;
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) > jahMaxSpeed)
+            {
+                jahMaxSpeed = method(jahCompare);
+            }
+        }
+        return jahMaxSpeed;
+    }
+    public static List<T> ReorderList<T>(List<T> unorderedList, Func<T, int> orderProcess, double increment=1)
+    {
+        List<T> newList = new();
+        int minValue = FindMinimalValue<T>(unorderedList, var => orderProcess(var));
+        int maxValue = FindMaximumValue<T>(unorderedList, var => orderProcess(var));
+
+        for (double i = minValue; i < maxValue+1; i+=increment)
+        {
+            foreach(T item in unorderedList)
+            {
+                if(orderProcess(item) == i)
+                {
+                    newList.Add(item);
+                }
+            }
+        }
+        return newList;
+    }
+    public static List<T> ReorderList<T>(List<T> unorderedList, Func<T, double> orderProcess, double increment=1)
+    {
+        List<T> newList = new();
+        double minValue = FindMinimalValue<T>(unorderedList, var => orderProcess(var));
+        double maxValue = FindMaximumValue<T>(unorderedList, var => orderProcess(var));
+
+        for (double i = minValue; i < maxValue; i+=increment)
+        {
+            foreach(T item in unorderedList)
+            {
+                if(orderProcess(item) == i)
+                {
+                    newList.Add(item);
+                }
+            }
+        }
+        return newList;
+    }
+
+    public static List<List<int>> GetSquareCoordinates(int radius=1, List<int> originPos=null)
+    {
+        originPos ??= new(){0, 0};
+
+        int x = radius;
+        int y = radius;
+
+        int _x = originPos[0];
+        int _y = originPos[1];
+
+        List<List<int>> squareCoordinates = new();
+
+        for(int i = -x; i < x+1; i++)
+        {
+            //Top
+            squareCoordinates.Add(new(){_x+i, _y+y});
+            //Bottom
+            squareCoordinates.Add(new(){_x-i, _y-y});
+        }
+        for(int i = -y; i < y+1; i++)
+        {
+            //Right
+            squareCoordinates.Add(new(){_x+x, _y+i});
+            //Left
+            squareCoordinates.Add(new(){_x-x, _y+i});
+        }
+        squareCoordinates = RemoveListRedundancies(squareCoordinates);
+        return squareCoordinates;
+    }
+    public static List<int> RemoveListRedundancies(List<int> oldList)
+    {
+        List<int> newList = new();
+        foreach(int item in oldList)
+        {
+            if (!ListContainsItem<int>(item, newList))
+            {
+                newList.Add(item);
+            }
+        }
+        return newList;
+    }
+    public static List<List<int>> RemoveListRedundancies(List<List<int>> oldList)
+    {
+        List<List<int>> newList = new();
+        foreach(List<int> item in oldList)
+        {
+            if (item[0] == 11 && item[1] == 4)
+            {
+                Display("");
+            }
+            if (!ListContainsList<int>(item, newList))
+            {
+                newList.Add(item);
+            }
+        }
+        return newList;
+    }
+    public static Boolean ListContainsList<T>(List<T> item, List<List<T>> list)
+    {
+        foreach(List<T> compare in list)
+        {
+            if(IsIdentical<T>(item, compare))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static Boolean ListContainsItem<T>(T item, List<T> list)
+    {
+        foreach(T compare in list)
+        {
+            if (!item.Equals(compare))
+            {
+                return false;
+            }
+        }
+        if (list.Count == 0)
+        {
+            return false;
+        }
+        return true;
+    }
+    public static Boolean IsIdentical<T>(List<T> compareOne, List<T> compareTwo)
+    {
+        return compareOne.SequenceEqual<T>(compareTwo);
+    }
+    public static Boolean IsIdentical<T>(T compareOne, T compareTwo)
+    {
+        return compareOne.Equals(compareTwo);
+    }
+    public static List<T> IntegrateLists<T>(List<T> baseList, List<T> additionalList)
+    {
+        foreach(T item in additionalList)
+        {
+            baseList.Add(item);
+        }
+        return baseList;
+    }
+
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     // i increases by 1
+    // }
 }
