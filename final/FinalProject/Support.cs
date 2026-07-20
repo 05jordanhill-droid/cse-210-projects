@@ -3,6 +3,7 @@ using System.Net;
 using System.IO;
 using System.Text.Json;
 using System.ComponentModel;
+using System.Drawing;
 
 class Support{
     public static int GetUserInputInteger(string Prompt, Boolean noNewLine=false)
@@ -117,6 +118,12 @@ class Support{
     public static void Clear()
     {
         Console.Clear();
+    }
+    public static void TrueClear()
+    {
+        // System.Diagnostics.Process.Start("cmd", "/c cls");
+        Clear();
+        Console.Write("\x1b[3J\x1b[2J\x1b[H");
     }
 
 
@@ -385,6 +392,19 @@ class Support{
     {
         return storage[storageKey];
     }
+
+    public static void Erase(int linesUp=0)
+    {
+        var (left, top) = Console.GetCursorPosition();
+        Console.SetCursorPosition(left, top - linesUp);
+
+        for(int i=0; i<linesUp+1; i++)
+        {
+            Display("                                                                                         ");
+        }
+        (left, top) = Console.GetCursorPosition();
+        Console.SetCursorPosition(left, top - linesUp-1);
+    }
 // 
 // Menu Interface
 
@@ -403,6 +423,36 @@ class Support{
         return Bundled;
     }
 */
+    public static void RunMenu(List<string> keyList, List<Func<Object, Object>> valueList, Object var, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
+    {
+        if(quit == "Quit" && !endless && !valueList.Contains(EndMenuRun))
+        {
+            keyList.Add($"{quit}");
+            valueList.Add(EndMenuRun);
+        }
+
+        Dictionary<string, Func<Object, Object>> menuDict = IndexizeDict(keyList, valueList);
+        Boolean run = true;
+
+        while(run)
+        {
+            DisplayMenu(menuDict);
+            
+            string choice = GetUserInputString(choicePrompt, true);
+
+            Erase(keyList.Count+1);
+            
+            // try
+            // {
+                Object outcome = GetChoice(menuDict, choice, var);
+                run = CheckChoiceEnd(outcome, run);
+            // }
+            // catch
+            // {
+            //     Display(errorMessage);
+            // }
+        }
+    }
     public static void RunMenu(List<string> keyList, List<Func<Object>> valueList, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
     {
         if(quit == "Quit" && !endless && !valueList.Contains(EndMenuRun))
@@ -419,36 +469,12 @@ class Support{
             DisplayMenu(menuDict);
             
             string choice = GetUserInputString(choicePrompt, true);
+
+            Erase(keyList.Count+1);
+            
             try
             {
                 Object outcome = GetChoice(menuDict, choice);
-                run = CheckChoiceEnd(outcome, run);
-            }
-            catch
-            {
-                Display(errorMessage);
-            }
-        }
-    }
-    public static void RunMenu(List<string> keyList, List<Func<Object, Object>> valueList, Object var, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
-    {
-        if(quit == "Quit" && !endless && !valueList.Contains(EndMenuRun))
-        {
-            keyList.Add($"{valueList.Count + 1}. {quit}");
-            valueList.Add(EndMenuRun);
-        }
-
-        Dictionary<string, Func<Object, Object>> menuDict = IndexizeDict(keyList, valueList);
-        Boolean run = true;
-
-        while(run)
-        {
-            DisplayMenu(menuDict);
-            
-            string choice = GetUserInputString(choicePrompt, true);
-            try
-            {
-                Object outcome = GetChoice(menuDict, choice, var);
                 run = CheckChoiceEnd(outcome, run);
             }
             catch
@@ -668,6 +694,36 @@ class Support{
         }
         return jahMinSpeed;
     }
+    public static T FindMinimalValueContainer<T>(List<T> sortList, Func<T, double> method)
+    {
+        double jahMinSpeed = 999999999;
+        T minContainer = sortList[0];
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) < jahMinSpeed)
+            {
+                jahMinSpeed = method(jahCompare);
+                minContainer = jahCompare;
+            }
+        }
+        return minContainer;
+    }
+    public static T FindMinimalValueContainer<T>(List<T> sortList, Func<T, int> method)
+    {
+        int jahMinSpeed = 999999999;
+        T minContainer = sortList[0];
+        
+        foreach(T jahCompare in sortList)
+        {
+            if(method(jahCompare) < jahMinSpeed)
+            {
+                jahMinSpeed = method(jahCompare);
+                minContainer = jahCompare;
+            }
+        }
+        return minContainer;
+    }
     public static double FindMaximumValue<T>(List<T> sortList, Func<T, double> method)
     {
         double jahMaxSpeed = -999999999999999999;
@@ -731,6 +787,33 @@ class Support{
         return newList;
     }
 
+    public static List<A> ExtractElementsToList<B, A>(List<B> list, Func<B, A> method)
+    {
+        List<A> newList = new();
+        foreach(B item in list)
+        {
+            newList.Add(method(item));
+        }
+        return newList;
+    }
+    public static List<int> GetRandomCoord<T, K>(List<List<K>> grid, int width, int height)
+    {
+        Boolean repeat = true;
+        List<int> coord = null;
+        if (repeat)
+        {
+            repeat = false;
+            int x = GetRandomInt(width);
+            int y = GetRandomInt(height);
+            coord = new(){x, y};
+            if (grid[y][x] is T)
+            {
+                repeat = true;
+            }
+        }
+        return coord;
+    }
+
     public static List<List<int>> GetSquareCoordinates(int radius=1, List<int> originPos=null)
     {
         originPos ??= new(){0, 0};
@@ -760,6 +843,20 @@ class Support{
         squareCoordinates = RemoveListRedundancies(squareCoordinates);
         return squareCoordinates;
     }
+    public static List<List<int>> GetFullSquareCoordinates(int radius, List<int> location=null)
+    {
+        location ??= [0, 0];
+
+        List<List<int>> fullCoordinates = new();
+
+        for(int i = 0; i < radius+1; i++)
+        {
+            List<List<int>> additionalRange = GetSquareCoordinates(i, location);
+
+            fullCoordinates = IntegrateLists<List<int>>(fullCoordinates, additionalRange);
+        }
+        return fullCoordinates;
+    }
     public static List<int> RemoveListRedundancies(List<int> oldList)
     {
         List<int> newList = new();
@@ -777,10 +874,6 @@ class Support{
         List<List<int>> newList = new();
         foreach(List<int> item in oldList)
         {
-            if (item[0] == 11 && item[1] == 4)
-            {
-                Display("");
-            }
             if (!ListContainsList<int>(item, newList))
             {
                 newList.Add(item);
@@ -829,6 +922,264 @@ class Support{
             baseList.Add(item);
         }
         return baseList;
+    }
+    // public static int GetLineLength(int )
+    public static List<List<int>> GetLineCoordinates(List<int> pointA, List<int> pointB, int thickness=0)
+    {
+        // a^2 + b^2 = c^2     (a^2 + b^2)^(1/2) = c
+
+        // y = mx + b
+        
+        List<List<int>> xLineCoordinates = GetXBaseLineCoordinates(pointA, pointB, thickness);
+        List<List<int>> yLineCoordinates = GetYBaseLineCoordinates(pointA, pointB, thickness);
+
+        List<List<int>> lineCoordinates = IntegrateLists<List<int>>(xLineCoordinates, yLineCoordinates);
+        
+        lineCoordinates = RemoveListRedundancies(lineCoordinates);
+
+        return lineCoordinates;
+    }
+    public static List<List<int>> GetYBaseLineCoordinates(List<int> pointA, List<int> pointB, int thickness = 0)
+    {
+        // a^2 + b^2 = c^2     (a^2 + b^2)^(1/2) = c
+
+        // y = mx + b
+        double run = pointB[1] - pointA[1];
+        double rise = pointB[0] - pointA[0];
+
+        double rate = rise/run;
+
+        int index = 1;
+        int otherIndex = 0;
+
+        List<List<double>> lineCoordinates = new();
+
+        int lower = pointA[index];
+        int higher = pointB[index];
+
+        if(Math.Abs(pointA[index]) > Math.Abs(pointB[index]))
+        {
+            higher = pointA[index];
+            lower = pointB[index];
+        }
+
+        for(int i = -thickness; i < thickness+1; i++)
+        {
+            // double lineLength = (run^2 + rise^2)^(1/2);
+            double yIntercept = (pointA[otherIndex] - (rate * pointA[index])) + i;
+
+            if(higher > 0)
+            {
+                for(int x = lower; x < higher+1; x++)
+                {
+                    double y = rate * x + yIntercept;
+                    List<double> coordinate = null;
+                    coordinate = new(){y, x};
+                    lineCoordinates.Add(coordinate);
+                }
+            } else
+            {
+                for(int x = lower; x > higher-1; x--)
+                {
+                    double y = rate * x + yIntercept;
+                    List<double> coordinate = null;
+                    coordinate = new(){y, x};
+                    lineCoordinates.Add(coordinate);
+                }
+            }
+        }
+        List<List<int>> approximatedLineCoordinates = ApproximateCoordinates(lineCoordinates, true);
+        approximatedLineCoordinates = RemoveListRedundancies(approximatedLineCoordinates);
+        return approximatedLineCoordinates;
+    }
+    public static List<List<int>> GetXBaseLineCoordinates(List<int> pointA, List<int> pointB, int thickness = 0)
+    {
+        // a^2 + b^2 = c^2     (a^2 + b^2)^(1/2) = c
+
+        // y = mx + b
+        double rise = pointB[1] - pointA[1];
+        double run = pointB[0] - pointA[0];
+
+        double rate = rise/run;
+
+        int index = 0;
+        int otherIndex = 1;
+
+        List<List<double>> lineCoordinates = new();
+
+        int lower = pointA[index];
+        int higher = pointB[index];
+
+        if(Math.Abs(pointA[index]) > Math.Abs(pointB[index]))
+        {
+            higher = pointA[index];
+            lower = pointB[index];
+        }
+
+        for(int i = -thickness; i < thickness+1; i++)
+        {
+            // double lineLength = (run^2 + rise^2)^(1/2);
+            double yIntercept = (pointA[otherIndex] - (rate * pointA[index])) + i;
+
+            if(higher > 0)
+            {
+                for(int x = lower; x < higher+1; x++)
+                {
+                    double y = rate * x + yIntercept;
+                    List<double> coordinate = null;
+                    coordinate = new(){x, y};
+                    lineCoordinates.Add(coordinate);
+                }
+            } else
+            {
+                for(int x = lower; x > higher-1; x--)
+                {
+                    double y = rate * x + yIntercept;
+                    List<double> coordinate = null;
+                    coordinate = new(){x, y};
+                    lineCoordinates.Add(coordinate);
+                }
+            }
+        }
+        List<List<int>> approximatedLineCoordinates = ApproximateCoordinates(lineCoordinates, true);
+        approximatedLineCoordinates = RemoveListRedundancies(approximatedLineCoordinates);
+        return approximatedLineCoordinates;
+    }
+    public static List<List<int>> ApproximateCoordinates(List<List<double>> coordinateList, Boolean wideGirth)
+    {
+        List<List<int>> approximatedCoordinates = new();
+        List<int> approximatedCoordinate;
+        foreach(List<double> coordinate in coordinateList)
+        {
+            approximatedCoordinate = new()
+            {
+                (int)Math.Ceiling(coordinate[0]), 
+                (int)Math.Ceiling(coordinate[1])
+            };
+            approximatedCoordinates.Add(approximatedCoordinate);
+
+            approximatedCoordinate = new()
+            {
+                (int)Math.Ceiling(coordinate[0]), 
+                (int)Math.Floor(coordinate[1])
+            };
+            approximatedCoordinates.Add(approximatedCoordinate);
+
+            approximatedCoordinate = new()
+            {
+                (int)Math.Floor(coordinate[0]), 
+                (int)Math.Ceiling(coordinate[1])
+            };
+            approximatedCoordinates.Add(approximatedCoordinate);
+
+            approximatedCoordinate = new()
+            {
+                (int)Math.Floor(coordinate[0]), 
+                (int)Math.Floor(coordinate[1])
+            };
+            approximatedCoordinates.Add(approximatedCoordinate);
+        }
+        approximatedCoordinates = RemoveListRedundancies(approximatedCoordinates);
+
+        return approximatedCoordinates;
+    }
+    public static List<List<int>> ApproximateCoordinates(List<List<double>> coordinateList)
+    {
+        List<List<int>> approximatedCoordinates = new();
+        List<int> approximatedCoordinate;
+        foreach(List<double> coordinate in coordinateList)
+        {
+            approximatedCoordinate = new()
+            {
+                (int)Math.Round(coordinate[0]), 
+                (int)Math.Round(coordinate[1])
+            };
+            approximatedCoordinates.Add(approximatedCoordinate);
+        }
+        approximatedCoordinates = RemoveListRedundancies(approximatedCoordinates);
+        
+        return approximatedCoordinates;
+    }
+    public static double GetDistance(List<int> coordinateA, List<int> coordinateB)
+    {
+        // a^2 + b^2 = c^2     c = (a^2 + b^2)^(1/2)
+        double a = Math.Abs(coordinateA[0] - coordinateB[0]);
+        double b = Math.Abs(coordinateA[1] - coordinateB[1]);
+        return Math.Pow((a*a + b*b), .5);
+    }
+    public static List<int> GetClosestCoordinate(List<List<int>> coordinateList, List<int> coordinate)
+    {
+        List<double> distances = new();
+        Dictionary<double, List<int>> references = new();
+        foreach(List<int> compareCoordinate in coordinateList)
+        {
+            double distance = GetDistance(coordinate, compareCoordinate);
+
+            distances.Add(distance);
+            try
+            {
+                references[distance] = compareCoordinate;
+            } catch {}
+        }
+        double maximumValue = distances.Max();
+        return references[maximumValue];
+    }
+    public static int StrToNum(string stringNum)
+    {
+        return int.Parse(stringNum);
+    }
+    public static List<int> StrToList(string stringInput, string separator=" ")
+    {
+        List<string> stringList = stringInput.Split(separator).ToList<string>();
+        List<int> numList = new();
+        foreach(string num in stringList)
+        {
+            numList.Add(StrToNum(num));
+        }
+        return numList;
+    }
+    public static List<List<int>> BlacklistNegative(List<List<int>> inputList)
+    {
+        List<List<int>> rList = new();
+
+        foreach(List<int> list in inputList)
+        {
+            rList.Add(list);
+            foreach(int piece in list)
+            {
+                if(piece < 0 && rList.Contains(list))
+                {
+                    rList.Remove(list);
+                }
+            }
+        }
+        return rList;
+    }
+    public static List<int> BlacklistNegative(List<int> inputList)
+    {
+        List<int> rList = new();
+
+        foreach(int item in inputList)
+        {
+            if(item >= 0)
+            {
+                rList.Add(item);
+            }
+        }
+        return rList;
+    }
+
+    public static List<List<int>> GetOverlap(List<List<int>> listOne, List<List<int>> listTwo)
+    {
+        List<List<int>> rList = new();
+        foreach(List<int> item in listOne)
+        {
+            if(ListContainsList(item, listTwo))
+            {
+                rList.Add(item);
+            }
+        }
+        return rList;
     }
 
     // for (int i = 0; i < 10; i++)

@@ -10,8 +10,4 @@ class FieldObject : SimulationObject
     {}
     public FieldObject(List<int> jahLocation) : base(jahLocation)
     {}
-
-/*
-    Functions
-*/
 }

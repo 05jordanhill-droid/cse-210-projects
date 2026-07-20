@@ -3,11 +3,13 @@ using System.Globalization;
 class Battlefield
 {
     private List<List<SimulationObject>> _jahGrid;
+    private List<SimulationObject> _jahSimulationObjectList;
 
     public Battlefield(int jahGridWidth, int jahGridHeight, List<SimulationObject> jahSimulationObjectList)
     {
         SetGridEmpty(jahGridWidth, jahGridHeight);
         SetGridPieces(jahSimulationObjectList);
+        SetSimulationObjectList(jahSimulationObjectList);
     }
     public Battlefield(int jahGridWidth, int jahGridHeight)
     {
@@ -17,6 +19,14 @@ class Battlefield
 /*
     Getters / Setters
 */
+    public void SetSimulationObjectList(List<SimulationObject> jahSimulationObjectList)
+    {
+        _jahSimulationObjectList = jahSimulationObjectList;
+    }
+    public List<SimulationObject> GetSimulationObjectList()
+    {
+        return _jahSimulationObjectList;
+    }
     public List<List<SimulationObject>> GetGrid()
     {
         return _jahGrid;
@@ -28,9 +38,11 @@ class Battlefield
     public void SetGridEmpty(int jahGridWidth, int jahGridHeight)
     {
         List<List<SimulationObject>> jahGrid = new();
+
         for (int y = 0; y < jahGridHeight; y++)
         {
             List<SimulationObject> jahRow = new();
+
             for (int x = 0; x < jahGridWidth; x++)
             {
                 jahRow.Add(new SimulationObject(jahGridWidth, jahGridHeight));
@@ -38,13 +50,16 @@ class Battlefield
             jahGrid.Add(jahRow);
         }
         SetGrid(jahGrid);
+        SetSimulationObjectList(new());
     }
     public void SetGridEmpty()
     {
         int y = 0;
+
         foreach (List<SimulationObject> jahList in GetGrid())
         {
             int x = 0;
+
             foreach (SimulationObject jahSimulationObject in jahList)
             {
                 SetGridPiece
@@ -57,6 +72,7 @@ class Battlefield
             }
             y += 1;
         }
+        SetSimulationObjectList(new());
     }
     public void SetGridPieces(List<SimulationObject> jahSimulationObjectList)
     {
@@ -72,14 +88,20 @@ class Battlefield
     }
     public void SetGridPiece(int jahX, int jahY, SimulationObject jahSimulationObject)
     {
-        GetGrid()[jahY][jahX] = jahSimulationObject;
+        try
+        {
+            GetGrid()[jahY][jahX] = jahSimulationObject;
+        } catch {}
     }
     public void SetGridPiece(SimulationObject jahSimulationObject)
     {
-        GetGrid()
-            [jahSimulationObject.GetPositionY()]
-            [jahSimulationObject.GetPositionX()] 
-            = jahSimulationObject;
+        try
+        {
+            GetGrid()
+                [jahSimulationObject.GetPositionY()]
+                [jahSimulationObject.GetPositionX()] 
+                = jahSimulationObject;
+        } catch {}
     }
     public SimulationObject GetGridPiece(int jahX, int jahY)
     {
@@ -89,6 +111,32 @@ class Battlefield
 /*
     Functions
 */
+    public int CountTeams()
+    {
+        List<Team> jahTeams = new();
+
+        foreach(SimulationObject jahObject in GetSimulationObjectList())
+        {
+            if (jahObject is Character)
+            {
+                Character jahCharacter = (Character)jahObject;
+                Boolean add = true;
+                
+                foreach(Team jahTeam in jahTeams)
+                {
+                    if (jahTeam.AreTeammates(jahCharacter))
+                    {
+                        add = false;
+                    }
+                }
+                if (add)
+                {
+                    jahTeams.Add(jahCharacter.GetTeam());
+                }
+            }
+        }
+        return jahTeams.Count;
+    }
     public void AssessActivate(List<int> jahCoordinates)
     {
         if (GetGrid()[jahCoordinates[1]][jahCoordinates[0]] is FieldObject)
@@ -111,5 +159,9 @@ class Battlefield
         {
             return null;
         }
+    }
+    public void ApplyHealth(SimulationObject jahObject, int jahHealth)
+    {
+        jahObject.SetHealth(jahObject.GetHealth() + jahHealth);
     }
 }

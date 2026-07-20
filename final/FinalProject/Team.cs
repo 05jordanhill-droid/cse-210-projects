@@ -3,51 +3,32 @@ using System.Globalization;
 class Team
 {
    private List<Character> _jahCharacterList;
-   private int _jahMoral;
-   private int _jahHealth;
+   private double _jahHealth;
    private int _jahStrength;
 
-    Team()
+    public Team()
     {
-        _jahMoral = 0;
         _jahHealth = 0;
         _jahStrength = 0;
     }
-    Team(List<Character> jahCharacterList)
+    public Team(List<Character> jahCharacterList)
     {
-        foreach (Character jahCharacter in jahCharacterList)
-        {
-            ChangeHealth(jahCharacter.GetHealth());
-            ChangeStrength(jahCharacter.GetStrength());
-            ChangeMoral(jahCharacter.GetHealth() + jahCharacter.GetStrength());
-        }
+        SetStats(jahCharacterList);
+        SetCharacterList(jahCharacterList);
     }
 
 /*
     Getters / Setters
 */
-    public int GetMoral()
-    {
-        return _jahMoral;
-    }
-    public void SetMoral(int jahMoral)
-    {
-        _jahMoral = jahMoral;
-    }
-    public void ChangeMoral(int jahMoral)
-    {
-        SetMoral(GetMoral() + jahMoral);
-    }
-
-    public int GetHealth()
+    public double GetHealth()
     {
         return _jahHealth;
     }
-    public void SetHealth(int jahHealth)
+    public void SetHealth(double jahHealth)
     {
         _jahHealth = jahHealth;
     }
-    public void ChangeHealth(int jahHealth)
+    public void ChangeHealth(double jahHealth)
     {
         SetHealth(GetHealth() + jahHealth);
     }
@@ -65,23 +46,70 @@ class Team
         SetStrength(GetStrength() + jahStrength);
     }
 
-/*
-    Functions
-*/
-    public void AssessTarget()
+    public void SetStats(List<Character> jahCharacterList)
     {
-        
+        ChangeHealth(0);
+        ChangeStrength(0);
+
+        foreach (Character jahCharacter in jahCharacterList)
+        {
+            ChangeHealth(jahCharacter.GetHealth());
+            ChangeStrength(jahCharacter.GetStrength());
+        }
     }
-    public void Target(Character jahCharacter)
+    public void SetStats()
     {
-        
+        ChangeHealth(0);
+        ChangeStrength(0);
+
+        foreach (Character jahCharacter in GetCharacterList())
+        {
+            ChangeHealth(jahCharacter.GetHealth());
+            ChangeStrength(jahCharacter.GetStrength());
+        }
     }
-    public void Target(Team jahTeam)
+
+    public List<Character> GetCharacterList()
     {
-        
+        return _jahCharacterList;
     }
-    public void CoordinateMove()
+    public void SetCharacterList(List<Character> jahCharacterList)
     {
-        
+        _jahCharacterList = jahCharacterList;
+    }
+
+    public void AddTeammate(Character jahCharacter)
+    {
+        if (!GetCharacterList().Contains(jahCharacter))
+        {
+            GetCharacterList().Add(jahCharacter);
+        }
+    }
+    public void RemoveTeammate(Character jahCharacter)
+    {
+        if (GetCharacterList().Contains(jahCharacter))
+        {
+            GetCharacterList().Remove(jahCharacter);
+        }
+    }
+    public Boolean AreTeammates(Character jahCharacter, Character jahOtherCharacter)
+    {
+        if (GetCharacterList().Contains(jahCharacter) && GetCharacterList().Contains(jahOtherCharacter))
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+    public Boolean AreTeammates(Character jahCharacter)
+    {
+        if (GetCharacterList().Contains(jahCharacter))
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 }

@@ -11,16 +11,17 @@ class TerminalDisplay
         string border = "*";
         string empty = " ";
 
-        // Support.Clear();
-
         Support.Display("--", true);
 
-        for (int i = 0; i < width+2; i++)
+        for (int i = 0; i < width; i++)
         {
             // Support.Display($"{border}{spacer}", true);
             Support.Display($"{i:00}", true);
+            if (i == width - 1)
+            {
+                Support.Display($"{border}");
+            }
         }
-        Support.Display("");
         
         int k = 0;
 
@@ -28,10 +29,15 @@ class TerminalDisplay
         {
             // Support.Display($"{border}{spacer}", true);
             Support.Display($"{k:00}", true);
+            
             foreach(T slot in row)
             {
                 if (slot != null)
                 {
+                    if(slot is Character)
+                    {
+                        
+                    }
                     Support.Display(GetAvatar(slot), true);
                 } else
                 {
@@ -45,8 +51,19 @@ class TerminalDisplay
         }
         for (int i = 0; i < width+2; i++)
         {
-            Support.Display($"{border}{spacer}", true);
+            if(i == width + 1)
+            {
+                Support.Display($"{border}", true);
+            } else
+            {
+                Support.Display($"{border}{spacer}", true);
+            }
         }
         Support.Display("");
+    }
+
+    public static void DisplayStats(Character jahCharacter)
+    {
+        Support.Display(jahCharacter.GetStringStats());
     }
 }

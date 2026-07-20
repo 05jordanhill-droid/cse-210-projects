@@ -2,7 +2,7 @@ using System.Globalization;
 class SimulationObject
 {
     private string _jahPriority;
-    private int _jahHealth;
+    private double _jahHealth;
     private int _jahDefense;
     private int _jahSpeed;
     private double _jahSpeedBuildUp;
@@ -12,6 +12,7 @@ class SimulationObject
     private List<List<int>> _jahFieldOfView;
     private int _jahFieldOfViewRadius;
     private string _jahAvatar;
+    private Boolean _jahCanStepOn;
 
 /*
     Getters / Setters
@@ -26,6 +27,8 @@ class SimulationObject
         SetPriority(jahPriority);
         SetLocation(jahPositionX, jahPositionY);
 
+        SetStepOn(false);
+
         ResetFieldOfView(jahFieldOfViewRadius);
         SetFieldOfViewRadius(jahFieldOfViewRadius);
     }
@@ -38,6 +41,8 @@ class SimulationObject
         SetPerception(jahPerception);
         SetPriority(jahPriority);
         SetLocation(jahLocation);
+
+        SetStepOn(false);
 
         ResetFieldOfView(jahFieldOfViewRadius);
         SetFieldOfViewRadius(jahFieldOfViewRadius);
@@ -53,6 +58,7 @@ class SimulationObject
         SetPriority(jahPriority);
         SetLocation(jahPositionX, jahPositionY);
 
+        SetStepOn(true);
         SetAvatar(" ");
 
         ResetFieldOfView(1);
@@ -70,17 +76,18 @@ class SimulationObject
         SetPriority(jahPriority);
         SetLocation(jahLocation);
 
+        SetStepOn(false);
         SetAvatar(" ");
 
         ResetFieldOfView(0);
         SetFieldOfViewRadius(0);
     }
     
-    public int GetHealth()
+    public double GetHealth()
     {
         return _jahHealth;
     }
-    public void SetHealth(int jahHealth)
+    public void SetHealth(double jahHealth)
     {
         _jahHealth = jahHealth;
     }
@@ -213,6 +220,7 @@ class SimulationObject
     public void ResetFieldOfView(int jahFieldOfViewRadius)
     {
         SetFieldOfView(new());
+
         for(int i = 0; i < jahFieldOfViewRadius+1; i++)
         {
             AddFieldOfView(i);
@@ -237,7 +245,14 @@ class SimulationObject
     {
         _jahAvatar = jahAvatar;
     }
-    
+    public void SetStepOn(Boolean jahStepOn)
+    {
+        _jahCanStepOn = jahStepOn;
+    }
+    public Boolean CanStepOn()
+    {
+        return _jahCanStepOn;
+    }
 /*
     Functions
 */
@@ -259,7 +274,7 @@ class SimulationObject
     virtual public void Assess(Battlefield jahBattlefield)
     {
         CheckPriorityActivate(jahBattlefield);
-        CheckPriorityWander(jahBattlefield);
+        CheckPriorityTarget(jahBattlefield);
     }
     public void CheckPriorityActivate(Battlefield jahBattlefield)
     {
@@ -268,81 +283,85 @@ class SimulationObject
             ActivateAbility(jahBattlefield);
         }
     }
-    public void CheckPriorityWander(Battlefield jahBattlefield)
+    public void CheckPriorityTarget(Battlefield jahBattlefield)
     {
-        if (GetPriority() == "wander")
+        if (GetPriority().Contains("target: "))
         {
-            AssessMovement(jahBattlefield);
+            string jahStr = GetPriority().Replace("target: ", "");
+
+            List<int> jahTarget = Support.StrToList(jahStr);
+            List<List<int>> jahPath = Support.GetLineCoordinates(GetLocation(), jahTarget);
+            List<List<int>> jahMovementOptions = Support.GetOverlap(GetFieldOfView(), jahPath);
+
+            AssessMovement(jahBattlefield, jahMovementOptions);
         }
     }
-    public void AssessMovement(Battlefield jahBattlefield, List<List<int>> jahMovementOptions=null)
+    virtual public void AssessMovement(Battlefield jahBattlefield, List<List<int>> jahMovementOptions=null, Boolean secondTry=false)
     {
         jahMovementOptions ??= GetFieldOfView();
         List<List<int>> jahValidMovements = new();
 
         SimulationObject jahSimulationObject = null;
 
+        if (Support.ListContainsList(GetLocation(), jahMovementOptions) && jahMovementOptions.Count > 1)
+        {
+            List<int> jahRemove = null;
+
+            foreach (List<int> jahLocation in jahMovementOptions)
+            {
+                if(Support.IsIdentical<int>(jahLocation, GetLocation()))
+                {
+                    jahRemove = jahLocation;
+                }
+            }
+            jahMovementOptions.Remove(jahRemove);
+        }
+        
         foreach (List<int> jahMovementOption in jahMovementOptions)
         {
-            List<int> claim = jahMovementOption;
             jahSimulationObject = jahBattlefield.Inspect(jahMovementOption);
+
             if (jahSimulationObject != null)
             {
-                if (jahSimulationObject.GetPriority() == "empty")
+                if (jahSimulationObject.CanStepOn() == true)
                 {
                     jahValidMovements.Add(jahMovementOption);
                 }
-                ////
-                if(jahValidMovements.Count == 0 && jahMovementOption != jahMovementOptions[8])
-                {
-                    Support.Display("", true);
-                }
             }
         }
-
-        //WIP choosing movement
-        if(jahValidMovements.Count == 0)
-        {
-            // Support.Display("", true);
-            SimulationObject test = jahBattlefield.Inspect(jahMovementOptions[8]);
-        }
-        List<int> jahMovement = Support.GetRandom<List<int>>(jahValidMovements);
-        //WIP choosing movement
-
-        Move(jahMovement, jahBattlefield);
-    }
-    virtual public void ActivateAbility(Battlefield jahBattlefield)
-    {
         
+        Boolean skip = false;
+        if (jahValidMovements.Count() == 0)
+        {
+            if (!secondTry)
+            {            
+                AssessMovement(jahBattlefield, null, true);
+            }
+            skip = true;
+        }
+
+        if (!skip)
+        {
+            List<int> jahMovement = Support.GetRandom<List<int>>(jahValidMovements);
+
+            Move(jahMovement, jahBattlefield);
+        }
     }
-    public void Move(List<int> jahMove, Battlefield jahBattlefield)
+    virtual public void ActivateAbility(Battlefield jahBattlefield){}
+    virtual public void Move(List<int> jahMove, Battlefield jahBattlefield)
     {
         jahBattlefield.AssessActivate(jahMove);
 
-        jahBattlefield.SetGridPiece(jahMove[0], jahMove[1], this);
-        jahBattlefield.SetGridPiece(new SimulationObject(GetPositionX(), GetPositionY()));
-        SetLocation(jahMove);
-
-//////////////////////////////
-        foreach(List<int> list in GetFieldOfView())
+        if(GetHealth() > 0)
         {
-            Support.Display($"[{list[0]:00}, {list[1]:00}], ", true);
+            jahBattlefield.SetGridPiece(jahMove[0], jahMove[1], this);
+            jahBattlefield.SetGridPiece(new SimulationObject(GetPositionX(), GetPositionY()));
+            SetLocation(jahMove);
         }
-        Support.Display("");
-//////////////////////////////
-
         ResetFieldOfView(GetFieldOfViewRadius());
-
-//////////////////////////////
-        foreach(List<int> list in GetFieldOfView())
-        {
-            Support.Display($"[{list[0]:00}, {list[1]:00}], ", true);
-        }
-        Support.Display("");
-//////////////////////////////
     }
-    public void AssessAttacked()
+    virtual public void AssessAttacked(Battlefield jahBattlefield, Character jahAttacker)
     {
-        
+        ActivateAbility(jahBattlefield);
     }
 }
