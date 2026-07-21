@@ -191,7 +191,7 @@ class Character : SimulationObject
             Attack(jahBattlefield, jahAttack);
         }
     }
-    override public void AssessAttacked(Battlefield jahBattlefield, Character jahAttacker)
+    public override void AssessAttacked(Battlefield jahBattlefield, Character jahAttacker)
     {
         ActivateAbility(jahBattlefield);
 
