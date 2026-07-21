@@ -442,15 +442,15 @@ class Support{
 
             Erase(keyList.Count+1);
             
-            // try
-            // {
+            try
+            {
                 Object outcome = GetChoice(menuDict, choice, var);
                 run = CheckChoiceEnd(outcome, run);
-            // }
-            // catch
-            // {
-            //     Display(errorMessage);
-            // }
+            }
+            catch
+            {
+                Display(errorMessage);
+            }
         }
     }
     public static void RunMenu(List<string> keyList, List<Func<Object>> valueList, string choicePrompt=">", string quit="Quit", Boolean endless=false, string errorMessage="Invalid Choice. Try Again.")
